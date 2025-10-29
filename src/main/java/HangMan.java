@@ -53,7 +53,7 @@ public class HangMan {
             System.out.print("\nPlease input a single letter as your guess: ");
 
             String letterString = scan.nextLine();
-            if( (letterString.length() > 1) || !isLetter(letterString.charAt(0)) ){ // not only a single letter
+            if( (letterString.length() != 1) || !isLetter(letterString.charAt(0)) ){ // not only a single letter
                 System.out.println("Invalid entry.");
                 continue;
             }
