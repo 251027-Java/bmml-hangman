@@ -14,8 +14,24 @@ public class HangMan {
 
         String guessed_letter_string = "";
 
+        System.out.println("Please enter 1 for normal difficulty and 2 for hard");
+        boolean invalidEntry = true;
+        String entry;
+        String dictPath= "";
+        do {
+            entry = scan.nextLine();
+            if (entry.length() == 1 && (entry.equals("1") || entry.equals("2"))){
+                invalidEntry = false;
+                if (entry.equals("1")){
+                    dictPath = "./src/main/dict.txt";
+                } else {
+                    dictPath = "./src/main/hardDict.txt";
+                }
+
+            }
+        } while (invalidEntry);
+
         // Get word from dict
-        String dictPath = "./src/main/dict.txt";
 
         String word;
         try {
