@@ -1,7 +1,8 @@
-import java.util.HashSet;
-import java.util.InputMismatchException;
-import java.util.Scanner;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class HangMan {
 
@@ -11,9 +12,20 @@ public class HangMan {
 
         Set<Character> guesses = new HashSet<Character>();
 
-        System.out.println("Please input a word for others to guess");
-//        String word = scan.nextLine();
-        String word = "Revature";
+
+        // Get word from dict
+        String dictPath = "./src/main/dict.txt";
+
+        String word;
+        try {
+            word = randomWord(dictPath);
+        } catch (IOException e ){
+            System.out.println("Trouble reading dict file....");
+            return;
+        }
+
+
+
         int triesLeft = 6;
         StringBuilder build = new StringBuilder();
         for (int i = 0; i < word.length(); i++) {
@@ -31,17 +43,19 @@ public class HangMan {
 
         while (triesLeft > 0) {
             //display ascii hangman
+            System.out.println(" ");
             System.out.println(visualizer);
             //Display currently guessed word
             System.out.println(currentDisplayWord);
-            System.out.print("Please input a single letter as your guess: ");
+            System.out.println(String.format("Tries Left: %d", triesLeft));
+            System.out.print("\nPlease input a single letter as your guess: ");
 
             String letterString = scan.nextLine();
             if( (letterString.length() > 1) || !isLetter(letterString.charAt(0)) ){ // not only a single letter
                 System.out.println("Invalid entry.");
                 continue;
             }
-            char let = letterString.charAt(0);
+            char let = Character.toLowerCase(letterString.charAt(0));
             // check if letter has been guessed
             if (guesses.contains(let)) {
                 System.out.println("Already guessed.");
@@ -53,21 +67,10 @@ public class HangMan {
                 // letter is in word
                 if (wordChars.contains(let)) {
                     // message congrats you guessed a letter!
-                    System.out.println(String.format("'%s' is in the word!"));
+                    System.out.println(String.format("'%c' is in the word!", let));
                     //add letter to guesses
                     guesses.add(let);
                     currentDisplayWord = updateDisplayWord(word, currentDisplayWord, let);
-
-//                    do { //need to account for multiple instances of a letter in the guess word
-//                         //but we're guaranteed at least one, so find the first occurrence,
-//                         //and then look for others. Start from index 0
-//                        index = -1;
-//                        index = word.indexOf(letter, index + 1);
-//                        //update our char array index from underscores
-//                        //char array[index] = letter
-//                    } while (index >= 0);
-                        // update current display word
-
                 }
 
                 //letter is not in word
@@ -78,6 +81,7 @@ public class HangMan {
                     guesses.add(let);
                     //move visualizer to next state
                     visualizer.nextState();
+                    System.out.println(String.format("%c is not in the word. :(", let));
                 }
             }
 
@@ -86,16 +90,19 @@ public class HangMan {
             checkSet.retainAll(wordChars);
             if (checkSet.size() == wordChars.size()) {
                 // You
-                System.out.println("YOU WIN!!! :)");
+                System.out.println("\nYOU WIN!!! :)");
+                System.out.println(String.format("The word was : %s", word));
                 break;
             }
         }
 
         // Game over display
         if (triesLeft == 0) {
-            System.out.println("YOU LOST :(");
+            System.out.println(visualizer);
+            System.out.println("\nYOU LOST :(");
+            System.out.println(String.format("The word was : %s", word));
         }
-
+        scan.close();
     }
 
     private static String updateDisplayWord(String word, String currDisplay, char guessedLetter) {
@@ -103,15 +110,31 @@ public class HangMan {
         for (int i = 0; i < word.length(); i++) {
             char let = word.charAt(i);
             if (let == guessedLetter) {
-                build.append(currDisplay.charAt(let)).append(' ');
+                build.append(word.charAt(i)).append(' ');
             } else {
                 build.append(currDisplay.charAt(i * 2)).append(' ');
             }
         }
-        build.deleteCharAt(build.length()-1); // remove trailling space
+        build.deleteCharAt(build.length()-1); // remove trailing space
         return build.toString();
     }
 
+    private static String randomWord(String filePath) throws IOException {
+        List<String> words = Files.readAllLines(Paths.get(filePath));
+        int numWords = words.size();
+        Random rand = new Random();
+
+        boolean invalidWord = true;
+        String word;
+        do {
+            int lineNum = rand.nextInt(numWords);
+            word = words.get(lineNum).strip();
+            if ((word.length() >= 5) && (word.length() <= 12)) {
+                invalidWord = false;
+            }
+        } while (invalidWord);
+        return word;
+    }
     private static boolean isLetter(char let) {
         return ((let <= 'z' && let >= 'a') || (let <= 'Z' && let >= 'A'));
     }

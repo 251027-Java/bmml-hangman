@@ -1,18 +1,18 @@
 import java.util.*;
 
 public class Visualizer{
-    int currentState;
-    int maxGuesses;
+    double currentState;
+    double maxGuesses;
     String[] states;
 
     public Visualizer(){
         currentState = 0;
-        maxGuesses = -1;
+        maxGuesses = 6;
         states = new String[7];
         setStates();
     }
 
-    public Visualizer(int maxGuesses){
+    public Visualizer(double maxGuesses){
         currentState = 0;
         this.maxGuesses = maxGuesses;
         states = new String[7];
@@ -21,11 +21,10 @@ public class Visualizer{
 
     public void nextState(){
         currentState++;
-        if (maxGuesses)
-        if (currentState > 6) currentState = 0;
+        if (currentState > maxGuesses) currentState = 0;
     }
 
-    public void setMaxGuesses(int maxGuesses){ this.maxGuesses = maxGuesses; }
+    public void setMaxGuesses(double maxGuesses){ this.maxGuesses = maxGuesses; }
 
     public void setStates(){
         states[0] = "  +---+\n" +
@@ -81,9 +80,7 @@ public class Visualizer{
 
     @Override
     public String toString(){
-        if (maxGuesses == -1){
-            return states[currentState];
-        }
-        return states[currentState/maxGuesses];
+        //return states[(int)currentState];
+        return states[(int)((currentState/maxGuesses)*6)];
     }
 }
