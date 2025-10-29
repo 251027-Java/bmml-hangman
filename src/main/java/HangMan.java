@@ -12,6 +12,7 @@ public class HangMan {
 
         Set<Character> guesses = new HashSet<Character>();
 
+        String guessed_letter_string = "";
 
         // Get word from dict
         String dictPath = "./src/main/dict.txt";
@@ -48,6 +49,7 @@ public class HangMan {
             //Display currently guessed word
             System.out.println(currentDisplayWord);
             System.out.println(String.format("Tries Left: %d", triesLeft));
+            System.out.println(String.format("Guessed Letters: %s", guessed_letter_string));
             System.out.print("\nPlease input a single letter as your guess: ");
 
             String letterString = scan.nextLine();
@@ -79,6 +81,7 @@ public class HangMan {
                     triesLeft --;
                     //add letter to guesses
                     guesses.add(let);
+                    guessed_letter_string = guessed_letter_string.concat(String.valueOf(let)).concat(" ");
                     //move visualizer to next state
                     visualizer.nextState();
                     System.out.println(String.format("%c is not in the word. :(", let));
