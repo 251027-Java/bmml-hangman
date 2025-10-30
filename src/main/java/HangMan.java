@@ -6,129 +6,154 @@ import java.util.*;
 
 public class HangMan {
 
+    public static final String ANSI_CONSOLE_CLEAR = "\033[H\033[2J";
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
 
     public static void main(String[] args) {
+        boolean quit = false;
         Scanner scan = new Scanner(System.in);
-        Visualizer visualizer = new Visualizer();
+        while (!quit) {
+            Visualizer visualizer = new Visualizer();
 
-        Set<Character> guesses = new HashSet<Character>();
+            Set<Character> guesses = new HashSet<Character>();
 
-        String guessed_letter_string = "";
+            String guessed_letter_string = "";
 
-        boolean invalidEntry = true;
-        String entry;
-        String dictPath= "";
-        do {
-            System.out.print("Please enter 1 for normal difficulty and 2 for hard: ");
-            entry = scan.nextLine();
-            if (entry.length() == 1 && (entry.equals("1") || entry.equals("2"))){
-                invalidEntry = false;
-                if (entry.equals("1")){
-                    dictPath = "./src/main/dict.txt";
-                    System.out.println(ANSI_GREEN + "Playing Normal Mode" + ANSI_RESET);
+            boolean invalidEntry = true;
+            String entry;
+            String dictPath = "";
+            do {
+                System.out.print("Please enter 1 for normal difficulty and 2 for hard: ");
+                entry = scan.nextLine();
+                if (entry.length() == 1 && (entry.equals("1") || entry.equals("2"))) {
+                    invalidEntry = false;
+                    if (entry.equals("1")) {
+                        dictPath = "./src/main/dict.txt";
+                        System.out.println(ANSI_GREEN + "Playing Normal Mode" + ANSI_RESET);
+                    } else {
+                        dictPath = "./src/main/hardDict.txt";
+                        System.out.println(ANSI_RED + "Playing Hard Mode" + ANSI_RESET);
+                    }
+
                 } else {
-                    dictPath = "./src/main/hardDict.txt";
-                    System.out.println(ANSI_RED + "Playing Hard Mode" + ANSI_RESET);
+                    System.out.println("Please enter either 1 or 2...");
+                }
+            } while (invalidEntry);
+
+            // Get word from dict
+
+            String word;
+            try {
+                word = randomWord(dictPath);
+            } catch (IOException e) {
+                System.out.println("Trouble reading dict file....");
+                return;
+            }
+
+            int triesLeft = 6;
+            StringBuilder build = new StringBuilder();
+            for (int i = 0; i < word.length(); i++) {
+                build.append('_').append(' ');
+            }
+            build.deleteCharAt(build.length() - 1); // remove trailing space
+            String currentDisplayWord = build.toString();
+            //potensh add input for num of guesses
+
+            // build char set for word to compare against for win
+            HashSet<Character> wordChars = new HashSet<>();
+            for (int i = 0; i < word.length(); i++) {
+                wordChars.add(word.charAt(i));
+            }
+
+            while (triesLeft > 0) {
+                //display ascii hangman
+                System.out.println(" ");
+                System.out.println(visualizer);
+                //Display currently guessed word
+                System.out.println(currentDisplayWord);
+                System.out.println(String.format("Tries Left: %d", triesLeft));
+                System.out.println(String.format("Guessed Letters: %s", guessed_letter_string));
+                System.out.print("\nPlease input a single letter as your guess: ");
+
+                String letterString = scan.nextLine();
+                if ((letterString.length() != 1) || !isLetter(letterString.charAt(0))) { // not only a single letter
+                    System.out.println("Invalid entry.");
+                    continue;
+                }
+                char let = Character.toLowerCase(letterString.charAt(0));
+                // check if letter has been guessed
+                if (guesses.contains(let)) {
+                    System.out.println("Already guessed.");
+                    continue;
                 }
 
-            } else {
-                System.out.println("Please enter either 1 or 2...");
-            }
-        } while (invalidEntry);
-
-        // Get word from dict
-
-        String word;
-        try {
-            word = randomWord(dictPath);
-        } catch (IOException e ){
-            System.out.println("Trouble reading dict file....");
-            return;
-        }
-
-        int triesLeft = 6;
-        StringBuilder build = new StringBuilder();
-        for (int i = 0; i < word.length(); i++) {
-            build.append('_').append(' ');
-        }
-        build.deleteCharAt(build.length() - 1); // remove trailing space
-        String currentDisplayWord = build.toString();
-        //potensh add input for num of guesses
-
-        // build char set for word to compare against for win
-        HashSet<Character> wordChars = new HashSet<>();
-        for (int i = 0; i < word.length(); i++) {
-            wordChars.add(word.charAt(i));
-        }
-
-        while (triesLeft > 0) {
-            //display ascii hangman
-            System.out.println(" ");
-            System.out.println(visualizer);
-            //Display currently guessed word
-            System.out.println(currentDisplayWord);
-            System.out.println(String.format("Tries Left: %d", triesLeft));
-            System.out.println(String.format("Guessed Letters: %s", guessed_letter_string));
-            System.out.print("\nPlease input a single letter as your guess: ");
-
-            String letterString = scan.nextLine();
-            if( (letterString.length() != 1) || !isLetter(letterString.charAt(0)) ){ // not only a single letter
-                System.out.println("Invalid entry.");
-                continue;
-            }
-            char let = Character.toLowerCase(letterString.charAt(0));
-            // check if letter has been guessed
-            if (guesses.contains(let)) {
-                System.out.println("Already guessed.");
-                continue;
-            }
-
-            // if not, check if letter in the word
-            else {
-                // letter is in word
-                if (wordChars.contains(let)) {
-                    // message congrats you guessed a letter!
-                    System.out.println(String.format("'%c' is in the word!", let));
-                    //add letter to guesses
-                    guesses.add(let);
-                    guessed_letter_string = guessed_letter_string.concat(ANSI_GREEN + String.valueOf(let) + ANSI_RESET).concat(" ");
-                    currentDisplayWord = updateDisplayWord(word, currentDisplayWord, let);
-                }
-
-                //letter is not in word
+                // if not, check if letter in the word
                 else {
-                    //subtract from tries
-                    triesLeft --;
-                    //add letter to guesses
-                    guesses.add(let);
-                    guessed_letter_string = guessed_letter_string.concat(ANSI_RED + String.valueOf(let) + ANSI_RESET).concat(" ");
-                    //move visualizer to next state
-                    visualizer.nextState();
-                    System.out.println(String.format("%c is not in the word. :(", let));
+                    // letter is in word
+                    if (wordChars.contains(let)) {
+                        // message congrats you guessed a letter!
+                        System.out.println(String.format("'%c' is in the word!", let));
+                        //add letter to guesses
+                        guesses.add(let);
+                        guessed_letter_string = guessed_letter_string.concat(ANSI_GREEN + String.valueOf(let) + ANSI_RESET).concat(" ");
+                        currentDisplayWord = updateDisplayWord(word, currentDisplayWord, let);
+                    }
+
+                    //letter is not in word
+                    else {
+                        //subtract from tries
+                        triesLeft--;
+                        //add letter to guesses
+                        guesses.add(let);
+                        guessed_letter_string = guessed_letter_string.concat(ANSI_RED + String.valueOf(let) + ANSI_RESET).concat(" ");
+                        //move visualizer to next state
+                        visualizer.nextState();
+                        System.out.println(String.format("%c is not in the word. :(", let));
+                    }
+                }
+
+                // check for win
+                HashSet<Character> checkSet = new HashSet<>(guesses);
+                checkSet.retainAll(wordChars);
+                if (checkSet.size() == wordChars.size()) {
+                    // You
+                    System.out.println("\nYOU WIN!!! :)");
+                    System.out.println(String.format("The word was : %s", word));
+                    break;
                 }
             }
 
-            // check for win
-            HashSet<Character> checkSet = new HashSet<>(guesses);
-            checkSet.retainAll(wordChars);
-            if (checkSet.size() == wordChars.size()) {
-                // You
-                System.out.println("\nYOU WIN!!! :)");
+            // Game over display
+            if (triesLeft == 0) {
+                System.out.println(visualizer);
+                System.out.println("\nYOU LOST :(");
                 System.out.println(String.format("The word was : %s", word));
-                break;
             }
-        }
 
-        // Game over display
-        if (triesLeft == 0) {
-            System.out.println(visualizer);
-            System.out.println("\nYOU LOST :(");
-            System.out.println(String.format("The word was : %s", word));
+            boolean badInput = true;
+            while (badInput) {
+                System.out.print("Play Again? (Y/N) \t");
+                String input = scan.nextLine();
+                if (input.equals("Y") | input.equals("y")) {
+                    badInput = false;
+                    clearScreen();
+                } else if (input.equals("N") | input.equals("n")) {
+                    quit = true;
+                    badInput = false;
+                    System.out.println("Goodbye!");
+                } else {
+                    System.out.println("Invalid Input");
+                }
+            }
         }
         scan.close();
+    }
+
+    private static void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
     }
 
     private static String updateDisplayWord(String word, String currDisplay, char guessedLetter) {
