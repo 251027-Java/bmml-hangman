@@ -53,7 +53,7 @@ public class HangMan {
             }
 
             int triesLeft = 6;
-        boolean usedHint = false;
+            boolean usedHint = false;
             StringBuilder build = new StringBuilder();
             for (int i = 0; i < word.length(); i++) {
                 build.append('_').append(' ');
