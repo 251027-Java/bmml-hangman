@@ -53,6 +53,7 @@ public class HangMan {
             }
 
             int triesLeft = 6;
+            boolean usedHint = false;
             StringBuilder build = new StringBuilder();
             for (int i = 0; i < word.length(); i++) {
                 build.append('_').append(' ');
@@ -111,7 +112,54 @@ public class HangMan {
                         //move visualizer to next state
                         visualizer.nextState();
                         System.out.println(String.format("%c is not in the word. :(", let));
+                        if ((triesLeft <= 2) && (usedHint == false)) {
+                        String hint = "";
+                        boolean valid_input = false;
+                        do {
+                            System.out.print("\nUse Hint? [Y/n] : ");
+                            hint = scan.nextLine();
+                            if ((hint.equalsIgnoreCase("y")) || (hint.equalsIgnoreCase("n"))) {
+                                valid_input = true;
+                            } else {
+                                System.out.println("Please only enter 'y' or 'n'.");
+                            }
+                        } while (valid_input == false);
+                        if (hint.equalsIgnoreCase("y")) {
+                            // choose random letter from those that are left
+                            // update display word
+                            // update visualizer
+                            usedHint = true;
+                            HashSet<String> emptySpaces = new HashSet<>();
+                            for (int i = 0; i < currentDisplayWord.length(); i++) {
+                                if (currentDisplayWord.charAt(i) == '_') {
+                                    emptySpaces.add(String.valueOf(i/2));
+                                }
+                            }
+                            System.out.println("Please choose one of the available spaces to fill with your hint:");
+                            System.out.print("\t");
+                            for (String index : emptySpaces) {
+                                System.out.print(String.format("%s  ", index));
+                            }
+                            String selection;
+                            boolean invalidSelection = true;
+                            do {
+                                System.out.print("\nSelection: ");
+                                selection = scan.nextLine();
+                                if (!emptySpaces.contains(selection)) {
+                                    System.out.println("Invalid selection, try again");
+                                }
+                                else {
+                                    invalidSelection = false;
+                                }
+                            } while (invalidSelection);
+                            Character chosenLetter = word.charAt(Integer.parseInt(selection));
+                            guesses.add(chosenLetter);
+                            guessed_letter_string = guessed_letter_string.concat(ANSI_GREEN + String.valueOf(chosenLetter) + ANSI_RESET).concat(" ");
+                            currentDisplayWord = updateDisplayWord(word, currentDisplayWord, chosenLetter);
+                        }
+
                     }
+                }
                 }
 
                 // check for win
