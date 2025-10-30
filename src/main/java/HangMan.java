@@ -116,7 +116,7 @@ public class HangMan {
             checkSet.retainAll(wordChars);
             if (checkSet.size() == wordChars.size()) {
                 // You
-                System.out.println("\nYOU WIN!!! :)");
+                System.out.println(ANSI_GREEN + "\nYOU WIN!!! :)" + ANSI_RESET);
                 System.out.println(String.format("The word was : %s", word));
                 break;
             }
@@ -125,7 +125,7 @@ public class HangMan {
         // Game over display
         if (triesLeft == 0) {
             System.out.println(visualizer);
-            System.out.println("\nYOU LOST :(");
+            System.out.println(ANSI_RED + "\nYOU LOST :(" + ANSI_RESET);
             System.out.println(String.format("The word was : %s", word));
         }
         scan.close();
